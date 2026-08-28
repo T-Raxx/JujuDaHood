@@ -4,6 +4,10 @@ set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 
+# runnable main juju = the fixed deobf (compiles; do-end wraps + 3 IIFE extractions)
+cp "$HERE/reference/juju-deobf.lua" "$HERE/dist/juju-main.lua"
+echo "dist/juju-main.lua <- reference/juju-deobf.lua ($(wc -l < "$HERE/dist/juju-main.lua")L)"
+
 names=()
 for f in addons/*.luau; do
   [ -e "$f" ] || continue
