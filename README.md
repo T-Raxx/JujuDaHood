@@ -1,46 +1,49 @@
 # JujuDaHood
 
-Rama mantenida de juju.lol para **Da Hood original** (place 2788229376). Base = mejor AC-killer disponible públicamente (leak deobfuscado LuraphV14.7). Desarrollo forward: mantener AC-killer + añadir/restaurar utility. Combate (autofire/silent aim internos) **detectado** por el AC/framework nuevo → NO se desarrolla sobre esos vectores.
+Rama mantenida de juju.lol para **Da Hood original** (place 2788229376). **Arquitectura addon** (path C): no reescribimos el monolito juju — corremos el juju runnable del usuario y le inyectamos features como **addons** vía `getgenv().juju`.
+
+## Por qué addons (no fork del monolito)
+
+El leak deobfuscado (LuraphV14.7) es la copia más completa + el mejor AC-killer público, PERO **no compila** en executor: choca el límite Luau de 200 locals/función, pervasivo (medido: liberar 7 locals movió el error 48 líneas). Remediarlo = slog riesgoso (bug silencioso local→global) y no-verificable sin runtime. → **Deobf = referencia de lectura; features = addons.**
 
 ## Estructura
 
 ```
-src/juju.lua          base (27156L, CopiesBest) — mejor AC-killer, LPH macros passthrough (corre standalone)
-assets/               deps vendorizadas de alex541-juju/juju (api.lua = Drawing lib, sonidos, imágenes, rbxm, themes)
-dist/JujuDaHood.lua   bundle (SP0: == src; SP1/SP2 concatenará módulos)
-build.sh              bundler
-docs/                 specs/notas
+reference/juju-deobf.lua   CopiesBest deobf (27156L) — REFERENCIA, no se corre. Mejor AC-killer + spec del addon API.
+docs/addon-api.md          contrato getgenv().juju (API surface, __IDENTIFIER, headless vs UI)
+addons/*.luau              nuestros addons
+loader.lua                 path C: espera getgenv().juju e inyecta addons
+build.sh                   regenera el manifiesto ADDONS de loader.lua desde addons/
+assets/                    deps vendorizadas de alex541-juju/juju (por si se hostea juju runnable)
 ```
 
-## Loader (una vez pusheado a GitHub público)
+## Uso
 
+1. Cargá tu juju (Da Hood real — setea `getgenv().juju`).
+2. Corré el loader:
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/dist/JujuDaHood.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/loader.lua"))()
 ```
 
-> **RAW_BASE = `T-Raxx/JujuDaHood`** — si tu usuario/repo GitHub es otro, cambiá las URLs en `src/juju.lua` (32 refs `raw.githubusercontent.com/T-Raxx/JujuDaHood/main/assets/`) y re-buildeá.
+> El loader espera `getgenv().juju` (20s timeout) y HttpGetea cada addon del manifiesto. Para probar WIP, apuntá `BRANCH_RAW` a `.../dev`.
 
-## AC-killer (base) — 3 capas
+## Addon API (resumen)
 
-1. **LogService nuke** — `:Disable()` conexiones `MessageOut` (AC lee errores consola), refresh 5s.
-2. **`__namecall` hook** — bloquea 13 opcodes AC en `MainEvent:FireServer(<flag>)`: `CHECKER, CHECKER_1, CHECKER_4, TeleportDetect, OneMoreTime, GUI_CHECK, checkingSPEED, BANREMOTE, KICKREMOTE, BR_KICKPC, BR_KICKMOBILE, PERMAIDBAN, INVISHIT`. Bloquea `Kick` foráneo + neutraliza `crash`.
-3. **getreg bypass** — mata closures conexión AC (heurística `source` 1 punto + `getupvalues(v)[2] ~= 26`), hook `signal.__index`→conexiones falsas, null `GetFocusedTextBox`.
+`getgenv().juju` expone: `find_element`, `set/get_flag`, `create_tab/section/element`, `create_connection`, `on_unload`, `get/set_ragebot_target(s)`, `is_player_knocked/dead/invulnerable`, `is_auto_stomping`, `purchase_item`, `reload_gun`, **`get/set_server_cframe`** (pos spoof), `get/set_player_status`, etc. Detalle + qué funciona headless en `docs/addon-api.md`.
 
-Es la única versión pública con las 3 capas + los 13 opcodes (todas las demás copias = 11 opcodes, solo namecall block simple).
+## Roadmap addons
 
-## Roadmap
+- **SP1 — ac-hardening** (defensivo primero): addon headless que instala los 2 vectores que al AC-killer base le faltan — `getsenv(Animate).checkingSPEED` source-kill + `__newindex` block del reset ws/jp del juego.
+- **SP2 — utility**:
+  - **anti-perfect-weld / anti-connection-exploit** (net-new, ausente en base): defensa HvH contra weld/fling de otros exploiters.
+  - **surface autostomp / rapidfire**: presentes en base (stripeados en builds defaced) → togglear vía `find_element` o reimplementar headless si el runtime no los tiene.
 
-- **SP0** — scaffold + base runnable + deps vendorizadas ✅ (local; falta push + live load-verify)
-- **SP1** — AC-killer maintenance: graftar 2 vectores (`getsenv(Animate).checkingSPEED` source-kill + `__newindex` block del reset ws/jp del juego), audit opcodes, resiliencia.
-- **SP2** — Utility restoration: surfacing de features ya presentes en base (Autostomp ✅, Rapidfire ✅ — stripeadas en el build compilado) + **net-new: anti perfect weld / anti connection exploit / anti-fling** (ausentes en base).
+## Constraints
 
-## Deps runtime
+- Combate interno de juju (**autofire / silent aim**) **DETECTADO** en Da Hood real → NO desarrollar sobre esos vectores.
+- Newest juju paid = LuraphV15 fanmade + luarmor (no deobfuscable) → no hay source más nuevo; base de referencia = V14.7.
+- **Verificación live bloqueada**: juju aborta sin `MainEvent` (clones/baseplate) → `getgenv().juju` sólo existe en Da Hood real, que requiere alt 14+ días. Addons se escriben code-complete; live-fire diferido.
 
-- `assets/api.lua` (= `customapi.lua`, idénticos) — **librería Drawing/env custom** (render ESP/HUD cross-executor). `loadstring`'d → var `drawing`. NO es auth/keysystem.
-- `GetObjects(rbxassetid://...)` ×9 — meshes/particles Roblox catálogo (no vendorizados, quedan en Roblox).
-- Cache local runtime: el script hace `isfile("juju recode/assets/X") ? readfile : HttpGet+writefile`.
+## Nota AC-killer (referencia)
 
-## Notas
-
-- Testing live en **Da Hood real** bloqueado: requiere alt 14+ días. Copia Da Hood sirve para load/UI verify (disparo serverside, opcodes pueden diferir → AC-killer no engancha full).
-- Newest juju paid = LuraphV15 fanmade + luarmor (no deobfuscable) → no hay source más nuevo; desarrollamos desde esta base V14.7.
+`reference/juju-deobf.lua` = única copia pública con las 3 capas (LogService `MessageOut` nuke + `__namecall` block de **13 opcodes** `CHECKER/CHECKER_1/CHECKER_4/TeleportDetect/OneMoreTime/GUI_CHECK/checkingSPEED/BANREMOTE/KICKREMOTE/BR_KICKPC/BR_KICKMOBILE/PERMAIDBAN/INVISHIT` + getreg closure-nuke). Todas las demás copias GitHub = 11 opcodes, namecall block simple.

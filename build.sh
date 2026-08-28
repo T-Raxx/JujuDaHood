@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
-# JujuDaHood bundler. SP0: monolithic passthrough (src -> dist).
-# Future SP1/SP2: concatenate feature modules onto the base here.
+# JujuDaHood build: regenera el manifiesto ADDANS de loader.lua desde addons/*.luau
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
-cp "$HERE/src/juju.lua" "$HERE/dist/JujuDaHood.lua"
-echo "built dist/JujuDaHood.lua ($(wc -l < "$HERE/dist/JujuDaHood.lua")L)"
+cd "$HERE"
+
+names=()
+for f in addons/*.luau; do
+  [ -e "$f" ] || continue
+  b="$(basename "$f" .luau)"
+  names+=("$b")
+done
+
+python - "$HERE/loader.lua" "${names[@]}" <<'PY'
+import sys, re
+loader = sys.argv[1]; names = sys.argv[2:]
+src = open(loader, encoding='utf-8').read()
+block = "local ADDONS = {\n" + "".join(f'    "{n}",\n' for n in names) + "}"
+src = re.sub(r'local ADDONS = \{.*?\n\}', block, src, count=1, flags=re.S)
+open(loader, 'w', encoding='utf-8', newline='\n').write(src)
+print(f"manifest: {len(names)} addon(s): " + ", ".join(names) if names else "manifest: (sin addons todavía)")
+PY
+echo "build ok"
