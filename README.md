@@ -19,13 +19,28 @@ assets/                    deps vendorizadas de alex541-juju/juju (por si se hos
 
 ## Uso
 
-1. Cargá tu juju (Da Hood real — setea `getgenv().juju`).
-2. Corré el loader:
+**Todo en uno** (Da Hood real, place 2788229376):
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/launch.lua"))()
+```
+Instala addons a `juju recode/addons/` + carga el juju main. Después: misc > addons > load "feature-exposer".
+
+**Separado:**
+```lua
+-- juju main (CopiesBest, compile-verified OK)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/dist/juju-main.lua"))()
+-- instalar addons a la carpeta nativa (Potassium: AppData\Local\Potassium\workspace\juju recode\addons)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/install.lua"))()
+```
+
+**Loader HttpGet alternativo** (inyecta addons vía getgenv().juju sin carpeta nativa):
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/loader.lua"))()
 ```
 
-> El loader espera `getgenv().juju` (20s timeout) y HttpGetea cada addon del manifiesto. Para probar WIP, apuntá `BRANCH_RAW` a `.../dev`.
+## juju main runnable
+
+`dist/juju-main.lua` = CopiesBest (mejor AC-killer + más completo) con el fix del límite Luau 200-local: 3 wraps `do..end` (chunk menú) + 3 bloques extraídos a IIFE `local function _block_esp/_block_ragebot/_block_aim() ... end _f()` (cada uno su propio register-file de 200; baseline pasa a upvalues). Compile-verified OK en executor. Fuente editable = `reference/juju-deobf.lua`; `build.sh` copia a `dist/`. **Runtime NO verificado** (CopiesBest aborta en clones sin MainEvent → necesita Da Hood real; transformación behavior-preserving por construcción).
 
 ## Addon API (resumen)
 
