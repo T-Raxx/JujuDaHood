@@ -7,6 +7,7 @@ local BRANCH_RAW = RAW  -- cambiar a .../dev para probar WIP
 
 -- Manifiesto de addons (build.sh lo regenera desde addons/*.luau)
 local ADDONS = {
+    "feature-exposer",
 }
 
 local function wait_for_juju(timeout)
