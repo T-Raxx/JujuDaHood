@@ -11,13 +11,16 @@ for f in addons/*.luau; do
   names+=("$b")
 done
 
-python - "$HERE/loader.lua" "${names[@]}" <<'PY'
-import sys, re
-loader = sys.argv[1]; names = sys.argv[2:]
-src = open(loader, encoding='utf-8').read()
+python - "$HERE" "${names[@]}" <<'PY'
+import sys, re, os
+here = sys.argv[1]; names = sys.argv[2:]
 block = "local ADDONS = {\n" + "".join(f'    "{n}",\n' for n in names) + "}"
-src = re.sub(r'local ADDONS = \{.*?\n\}', block, src, count=1, flags=re.S)
-open(loader, 'w', encoding='utf-8', newline='\n').write(src)
+for fn in ("loader.lua", "install.lua"):
+    p = os.path.join(here, fn)
+    if not os.path.exists(p): continue
+    src = open(p, encoding='utf-8').read()
+    src = re.sub(r'local ADDONS = \{.*?\n\}', block, src, count=1, flags=re.S)
+    open(p, 'w', encoding='utf-8', newline='\n').write(src)
 print(f"manifest: {len(names)} addon(s): " + ", ".join(names) if names else "manifest: (sin addons todavía)")
 PY
 echo "build ok"
