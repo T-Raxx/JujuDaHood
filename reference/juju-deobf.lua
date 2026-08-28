@@ -6301,6 +6301,7 @@ do
 
         -- >> ( config system )
 
+        do
         local function to_base64(input)
             local charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
             local encoded = ""
@@ -6935,6 +6936,7 @@ do
                     error("juju: addon "..name.." experienced an error while loading: "..err)
                 end
             end
+        end
         end
 
         -- >> ( fake settings )
