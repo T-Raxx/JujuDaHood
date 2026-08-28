@@ -16364,7 +16364,7 @@ end
 
 -- >> ( player visuals )
 
-do
+local function _block_esp()
     menu_references["esp_section"] = menu["groups"]["visuals"]:create_section("players", "player esp", 1, 0.6, 0)
     menu_references["esp"] = menu_references["esp_section"]:create_element({["name"] = "enabled"}, {["toggle"] = {["flag"] = "esp"}})
         menu_references["esp_settings"] = menu_references["esp"]:create_settings()
@@ -18974,6 +18974,7 @@ do
         end
     end)
 end
+_block_esp()
 
 -- > ( self esp)
 
