@@ -8810,6 +8810,7 @@ end
 
 -- > ( hit detection )
 
+do
 local shot_count = 0
 
 do
@@ -8991,6 +8992,7 @@ do
     end
 
     setrawmetatable(event, new)
+end
 end
 
 -- > ( shop )
