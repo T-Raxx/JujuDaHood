@@ -3314,6 +3314,7 @@ do
         tween(actives["panel"]["search_text"], {Color = menu["colors"]["active_text"]}, circular, out, 0.15)
     end
 
+    do
     local handle_click = LPH_JIT_MAX(function(_, state, input)
         if moving then
             moving:Disconnect()
@@ -3888,6 +3889,7 @@ do
             end
         end
     end))
+    end
 
     create_connection(user_input_service["InputEnded"], LPH_NO_VIRTUALIZE(function(input, gpe)
         if not gpe then
