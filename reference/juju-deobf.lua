@@ -3314,6 +3314,7 @@ do
         tween(actives["panel"]["search_text"], {Color = menu["colors"]["active_text"]}, circular, out, 0.15)
     end
 
+    do
     local handle_click = LPH_JIT_MAX(function(_, state, input)
         if moving then
             moving:Disconnect()
@@ -3888,6 +3889,7 @@ do
             end
         end
     end))
+    end
 
     create_connection(user_input_service["InputEnded"], LPH_NO_VIRTUALIZE(function(input, gpe)
         if not gpe then
@@ -6299,6 +6301,7 @@ do
 
         -- >> ( config system )
 
+        do
         local function to_base64(input)
             local charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
             local encoded = ""
@@ -6933,6 +6936,7 @@ do
                     error("juju: addon "..name.." experienced an error while loading: "..err)
                 end
             end
+        end
         end
 
         -- >> ( fake settings )
@@ -8806,6 +8810,7 @@ end
 
 -- > ( hit detection )
 
+do
 local shot_count = 0
 
 do
@@ -8987,6 +8992,7 @@ do
     end
 
     setrawmetatable(event, new)
+end
 end
 
 -- > ( shop )
@@ -16358,7 +16364,7 @@ end
 
 -- >> ( player visuals )
 
-do
+local function _block_esp()
     menu_references["esp_section"] = menu["groups"]["visuals"]:create_section("players", "player esp", 1, 0.6, 0)
     menu_references["esp"] = menu_references["esp_section"]:create_element({["name"] = "enabled"}, {["toggle"] = {["flag"] = "esp"}})
         menu_references["esp_settings"] = menu_references["esp"]:create_settings()
@@ -18968,6 +18974,7 @@ do
         end
     end)
 end
+_block_esp()
 
 -- > ( self esp)
 
@@ -20339,7 +20346,7 @@ end
 
 local backtrack_data = {}
 
-do
+local function _block_ragebot()
     menu_references["general_section"] = menu["groups"]["main"]:create_section("ragebot", "general", 1, 0.7)
         menu_references["ragebot_enabled"] = menu_references["general_section"]:create_element({["name"] = "ragebot"}, {["toggle"] = {["flag"] = "ragebot"}})
         menu_references["auto_fire"] = menu_references["general_section"]:create_element({["name"] = "auto fire"}, {["toggle"] = {["flag"] = "auto_fire", ["default"] = false}})
@@ -24231,6 +24238,7 @@ do
         end)
     end--]]
 end
+_block_ragebot()
 
 -- > ( legitbot )
 
@@ -24239,7 +24247,7 @@ local set_silent_aim_position = nil
 local get_silent_aim_position = nil
 local get_backtrack_models = nil
 
-do
+local function _block_aim()
     -- >> ( mouse hook )
 
     local silent_aim_position = nil
@@ -25832,6 +25840,7 @@ do
         end)
     end
 end
+_block_aim()
 
 -- > ( finalization )
 
