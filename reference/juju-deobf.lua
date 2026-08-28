@@ -20346,7 +20346,7 @@ end
 
 local backtrack_data = {}
 
-do
+local function _block_ragebot()
     menu_references["general_section"] = menu["groups"]["main"]:create_section("ragebot", "general", 1, 0.7)
         menu_references["ragebot_enabled"] = menu_references["general_section"]:create_element({["name"] = "ragebot"}, {["toggle"] = {["flag"] = "ragebot"}})
         menu_references["auto_fire"] = menu_references["general_section"]:create_element({["name"] = "auto fire"}, {["toggle"] = {["flag"] = "auto_fire", ["default"] = false}})
@@ -24238,6 +24238,7 @@ do
         end)
     end--]]
 end
+_block_ragebot()
 
 -- > ( legitbot )
 
