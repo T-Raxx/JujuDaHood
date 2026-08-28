@@ -24247,7 +24247,7 @@ local set_silent_aim_position = nil
 local get_silent_aim_position = nil
 local get_backtrack_models = nil
 
-do
+local function _block_aim()
     -- >> ( mouse hook )
 
     local silent_aim_position = nil
@@ -25840,6 +25840,7 @@ do
         end)
     end
 end
+_block_aim()
 
 -- > ( finalization )
 
