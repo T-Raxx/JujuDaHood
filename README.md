@@ -1,6 +1,6 @@
 # JujuDaHood
 
-Rama mantenida de juju.lol para **Da Hood original** (place 2788229376). **Arquitectura addon** (path C): no reescribimos el monolito juju — corremos el juju runnable del usuario y le inyectamos features como **addons** vía `getgenv().juju`.
+Layer de addons sobre **juju reborn** para **Da Hood original** (place 2788229376). **Base = juju reborn** (`tungtungsahurbek-lang/juju`, fork open-source ACTIVO: fire anti-detección con packet-mirroring + jitter, AC-killer, resolver/backtrack). Le inyectamos features como **addons** vía `getgenv().juju` — mismo contrato + misma carpeta `juju recode/addons/`. Nuestro valor = addons net-new (anti-perfect-weld) + config.
 
 ## Por qué addons (no fork del monolito)
 
@@ -23,7 +23,7 @@ assets/                    deps vendorizadas de alex541-juju/juju (por si se hos
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/launch.lua"))()
 ```
-Instala addons a `juju recode/addons/` + carga el juju main. Después: misc > addons > load "feature-exposer".
+Carga juju reborn (base) + instala nuestros addons a `juju recode/addons/`. Después: misc > addons > load "feature-exposer".
 
 **Separado:**
 ```lua
@@ -38,9 +38,13 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/mai
 loadstring(game:HttpGet("https://raw.githubusercontent.com/T-Raxx/JujuDaHood/main/loader.lua"))()
 ```
 
-## juju main runnable
+## Base = juju reborn (pivote 2026-08-29)
 
-`dist/juju-main.lua` = CopiesBest (mejor AC-killer + más completo) con el fix del límite Luau 200-local: 3 wraps `do..end` (chunk menú) + 3 bloques extraídos a IIFE `local function _block_esp/_block_ragebot/_block_aim() ... end _f()` (cada uno su propio register-file de 200; baseline pasa a upvalues). Compile-verified OK en executor. Fuente editable = `reference/juju-deobf.lua`; `build.sh` copia a `dist/`. **Runtime NO verificado** (CopiesBest aborta en clones sin MainEvent → necesita Da Hood real; transformación behavior-preserving por construcción).
+Base activa = `tungtungsahurbek-lang/juju` (loadstring `reborn.lua`). Elegido sobre `d1rtylegitness/juju` (live): más reciente (26-ago), fire anti-detección superior (40 sites jitter/spread/noise vs 16), resolver/backtrack/desync más completos. Compila directo (arquitectura librería, sin el problema 200-local). Contrato `getgenv().juju` = superset de CopiesBest → feature-exposer + addons compatibles verificados. Ninguno tiene anti-perfect-weld → net-new nuestro.
+
+## Fallback: dist/juju-main.lua (CopiesBest fixeado)
+
+`dist/juju-main.lua` = CopiesBest con el fix del límite Luau 200-local (fallback offline si reborn cae): 3 wraps `do..end` (chunk menú) + 3 bloques extraídos a IIFE `local function _block_esp/_block_ragebot/_block_aim() ... end _f()` (cada uno su propio register-file de 200; baseline pasa a upvalues). Compile-verified OK en executor. Fuente editable = `reference/juju-deobf.lua`; `build.sh` copia a `dist/`. **Runtime NO verificado** (CopiesBest aborta en clones sin MainEvent → necesita Da Hood real; transformación behavior-preserving por construcción).
 
 ## Addon API (resumen)
 
